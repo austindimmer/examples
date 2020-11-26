@@ -1,4 +1,4 @@
-# F5 BigIP Local Traffic Manager Example
+# F5 BigIP Local Traffic Manager
 
 This example demonstrates use of the [Pulumi F5 BigIP Provider](https://github.com/pulumi/pulumi-f5bigip)
 to provide load balancing via an F5 BigIP appliance to backend HTTP instances. The example provisions:
@@ -12,7 +12,7 @@ All of these happen behind a single `pulumi up` command, and are expressed in ju
 
 # Prerequisites
 
-Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/reference/install/).
+Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/get-started/install/).
 
 If you **_already_** have an F5 BigIP appliance available, you only need administrative credentials to it and 
 at least one backend HTTP instance to load balance to.
@@ -25,7 +25,7 @@ Pool Attachments.
 
 # Running the Example
 
-If you need to deploy an F5 BigIP appliance or backend HTTP instances as described above, first [Configure Pulumi for AWS](https://www.pulumi.com/docs/reference/clouds/aws/setup/).
+If you need to deploy an F5 BigIP appliance or backend HTTP instances as described above, first [Configure Pulumi for AWS](https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/).
 
 ## (Optional) Provision an F5 BigIP appliance on AWS
 

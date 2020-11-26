@@ -1,4 +1,5 @@
 // Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as awsx from "@pulumi/awsx";
 import * as eks from "@pulumi/eks";
 import * as k8s from "@pulumi/kubernetes";
@@ -7,10 +8,11 @@ import * as pulumi from "@pulumi/pulumi";
 const name = "helloworld";
 
 // Create an EKS cluster with non-default configuration
-const vpc = new awsx.Network("vpc", { usePrivateSubnets: false });
+const vpc = new awsx.ec2.Vpc("vpc", { numberOfAvailabilityZones: 2 });
+
 const cluster = new eks.Cluster(name, {
-    vpcId: vpc.vpcId,
-    subnetIds: vpc.subnetIds,
+    vpcId: vpc.id,
+    subnetIds: vpc.publicSubnetIds,
     desiredCapacity: 2,
     minSize: 1,
     maxSize: 2,
@@ -19,7 +21,7 @@ const cluster = new eks.Cluster(name, {
 });
 
 // Export the clusters' kubeconfig.
-export const kubeconfig = cluster.kubeconfig
+export const kubeconfig = cluster.kubeconfig;
 
 // Create a Kubernetes Namespace
 const ns = new k8s.core.v1.Namespace(name, {}, { provider: cluster.provider });
@@ -47,16 +49,16 @@ const deployment = new k8s.apps.v1.Deployment(name,
                         {
                             name: name,
                             image: "nginx:latest",
-                            ports: [{ name: "http", containerPort: 80 }]
-                        }
+                            ports: [{ name: "http", containerPort: 80 }],
+                        },
                     ],
-                }
-            }
+                },
+            },
         },
     },
     {
         provider: cluster.provider,
-    }
+    },
 );
 
 // Export the Deployment name
@@ -77,9 +79,9 @@ const service = new k8s.core.v1.Service(name,
     },
     {
         provider: cluster.provider,
-    }
+    },
 );
 
 // Export the Service name and public LoadBalancer Endpoint
 export const serviceName = service.metadata.name;
-export const serviceHostname = service.status.apply(s => s.loadBalancer.ingress[0].hostname)
+export const serviceHostname = service.status.loadBalancer.ingress[0].hostname;

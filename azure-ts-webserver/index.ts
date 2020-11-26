@@ -1,5 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as azure from "@pulumi/azure";
+import * as pulumi from "@pulumi/pulumi";
 
 // Get the desired username and password for our VM.
 const config = new pulumi.Config();
@@ -18,11 +20,6 @@ const network = new azure.network.VirtualNetwork("server-network", {
         addressPrefix: "10.0.1.0/24",
     }],
 });
-const subnet = new azure.network.Subnet("server-subnet", {
-    resourceGroupName,
-    virtualNetworkName: network.name,
-    addressPrefix: "10.0.2.0/24",
-});
 
 // Now allocate a public IP and assign it to our NIC.
 const publicIp = new azure.network.PublicIp("server-ip", {
@@ -34,7 +31,7 @@ const networkInterface = new azure.network.NetworkInterface("server-nic", {
     resourceGroupName,
     ipConfigurations: [{
         name: "webserveripcfg",
-        subnetId: subnet.id,
+        subnetId: network.subnets[0].id,
         privateIpAddressAllocation: "Dynamic",
         publicIpAddressId: publicIp.id,
     }],
@@ -75,6 +72,8 @@ nohup python -m SimpleHTTPServer 80 &`,
 const done = pulumi.all({ _: vm.id, name: publicIp.name, resourceGroupName: publicIp.resourceGroupName });
 
 export const ipAddress = done.apply(d => {
-    const ip = azure.network.getPublicIP({ name: d.name, resourceGroupName: d.resourceGroupName });
-    return ip.ipAddress;
+    return azure.network.getPublicIP({
+        name: d.name,
+        resourceGroupName: d.resourceGroupName,
+    }, { async: true }).then(ip => ip.ipAddress);
 });

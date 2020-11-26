@@ -1,3 +1,5 @@
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as k8s from "@pulumi/kubernetes";
 import * as k8stypes from "@pulumi/kubernetes/types/input";
 import * as pulumi from "@pulumi/pulumi";
@@ -35,6 +37,7 @@ export class ServiceDeployment extends pulumi.ComponentResource {
 
         this.service = new k8s.core.v1.Service(name, {
             metadata: {
+                name: name,
                 labels: this.deployment.metadata.labels,
             },
             spec: {
@@ -48,8 +51,8 @@ export class ServiceDeployment extends pulumi.ComponentResource {
 
         if (args.allocateIpAddress) {
             this.ipAddress = args.isMinikube ?
-                this.service.spec.apply(spec => spec.clusterIP) :
-                this.service.status.apply(status => status.loadBalancer.ingress[0].ip);
+                this.service.spec.clusterIP :
+                this.service.status.loadBalancer.ingress[0].ip;
         }
     }
 }

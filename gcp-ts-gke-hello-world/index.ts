@@ -1,27 +1,46 @@
 // Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
+import * as gcp from "@pulumi/gcp";
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import * as gcp from "@pulumi/gcp";
 
 const name = "helloworld";
 
 const config = new pulumi.Config();
-export const masterVersion = config.require("masterVersion");
+export const masterVersion = config.get("masterVersion") ||
+    gcp.container.getEngineVersions().then(it => it.latestMasterVersion);
 
 // Create a GKE cluster
 const cluster = new gcp.container.Cluster(name, {
-    initialNodeCount: 2,
+    // We can't create a cluster with no node pool defined, but we want to only use
+    // separately managed node pools. So we create the smallest possible default
+    // node pool and immediately delete it.
+    initialNodeCount: 1,
+    removeDefaultNodePool: true,
+
     minMasterVersion: masterVersion,
-    nodeVersion: masterVersion,
+});
+
+const nodePool = new gcp.container.NodePool(`primary-node-pool`, {
+    cluster: cluster.name,
+    initialNodeCount: 2,
+    location: cluster.location,
     nodeConfig: {
+        preemptible: true,
         machineType: "n1-standard-1",
         oauthScopes: [
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/devstorage.read_only",
             "https://www.googleapis.com/auth/logging.write",
-            "https://www.googleapis.com/auth/monitoring"
+            "https://www.googleapis.com/auth/monitoring",
         ],
     },
+    version: masterVersion,
+    management: {
+        autoRepair: true,
+    },
+}, {
+    dependsOn: [cluster],
 });
 
 // Export the Cluster name
@@ -64,6 +83,8 @@ users:
 // Create a Kubernetes provider instance that uses our cluster from above.
 const clusterProvider = new k8s.Provider(name, {
     kubeconfig: kubeconfig,
+}, {
+  dependsOn: [nodePool],
 });
 
 // Create a Kubernetes Namespace
@@ -92,16 +113,16 @@ const deployment = new k8s.apps.v1.Deployment(name,
                         {
                             name: name,
                             image: "nginx:latest",
-                            ports: [{ name: "http", containerPort: 80 }]
-                        }
+                            ports: [{ name: "http", containerPort: 80 }],
+                        },
                     ],
-                }
-            }
+                },
+            },
         },
     },
     {
         provider: clusterProvider,
-    }
+    },
 );
 
 // Export the Deployment name
@@ -122,9 +143,9 @@ const service = new k8s.core.v1.Service(name,
     },
     {
         provider: clusterProvider,
-    }
+    },
 );
 
 // Export the Service name and public LoadBalancer endpoint
 export const serviceName = service.metadata.name;
-export const servicePublicIP = service.status.apply(s => s.loadBalancer.ingress[0].ip)
+export const servicePublicIP = service.status.loadBalancer.ingress[0].ip;

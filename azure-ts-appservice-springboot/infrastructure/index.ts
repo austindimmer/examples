@@ -1,6 +1,8 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as azure from "@pulumi/azure";
 import * as docker from "@pulumi/docker";
+import * as pulumi from "@pulumi/pulumi";
 
 // Create an Azure Resource Group
 const resourceGroup = new azure.core.ResourceGroup("jenkins-tutorial-group");
@@ -38,12 +40,12 @@ const appService = new azure.appservice.AppService(customImage, {
     resourceGroupName: resourceGroup.name,
     appServicePlanId: appServicePlan.id,
     appSettings: {
-      WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
-      DOCKER_REGISTRY_SERVER_URL: pulumi.interpolate`https://${registry.loginServer}`,
-      DOCKER_REGISTRY_SERVER_USERNAME: registry.adminUsername,
-      DOCKER_REGISTRY_SERVER_PASSWORD: registry.adminPassword,
-      // Our custom image exposes port 9000.
-      WEBSITES_PORT: 9000,
+        WEBSITES_ENABLE_APP_SERVICE_STORAGE: "false",
+        DOCKER_REGISTRY_SERVER_URL: pulumi.interpolate`https://${registry.loginServer}`,
+        DOCKER_REGISTRY_SERVER_USERNAME: registry.adminUsername,
+        DOCKER_REGISTRY_SERVER_PASSWORD: registry.adminPassword,
+        // Our custom image exposes port 9000.
+        WEBSITES_PORT: "9000",
     },
     siteConfig: {
         alwaysOn: true,

@@ -10,8 +10,8 @@ To deploy your infrastructure, follow the below steps.
 
 ### Prerequisites
 
-1. [Install Pulumi](https://www.pulumi.com/docs/reference/install/)
-1. [Install Node.js version 6 or later](https://nodejs.org/en/download/)
+1. [Install Pulumi](https://www.pulumi.com/docs/get-started/install/)
+1. [Install Node.js](https://nodejs.org/en/download/)
 1. Install a package manager for Node.js, such as [npm](https://www.npmjs.com/get-npm) or [Yarn](https://yarnpkg.com/en/docs/install).
 1. [Install Google Cloud SDK (`gcloud`)](https://cloud.google.com/sdk/docs/downloads-interactive)
 1. Configure GCP Auth
@@ -26,7 +26,7 @@ To deploy your infrastructure, follow the below steps.
     > Note: This auth mechanism is meant for inner loop developer
     > workflows. If you want to run this example in an unattended service
     > account setting, such as in CI/CD, please [follow instructions to
-    > configure your service account](https://www.pulumi.com/docs/reference/clouds/gcp/setup/). The
+    > configure your service account](https://www.pulumi.com/docs/intro/cloud-providers/gcp/setup/). The
     > service account must have the role `Kubernetes Engine Admin` / `container.admin`.
 
 ### Steps
@@ -35,7 +35,7 @@ After cloning this repo, from this working directory, run these commands:
 
 1. Install the required Node.js packages:
 
-    This installs the dependent packages [needed](https://www.pulumi.com/docs/reference/how/) for our Pulumi program.
+    This installs the dependent packages [needed](https://www.pulumi.com/docs/intro/concepts/how-pulumi-works/) for our Pulumi program.
 
     ```bash
     $ npm install
@@ -56,7 +56,6 @@ After cloning this repo, from this working directory, run these commands:
     ```bash
     $ pulumi config set gcp:project <YOUR_GCP_PROJECT_HERE>
     $ pulumi config set gcp:zone us-west1-a     // any valid GCP Zone here
-    $ pulumi config set masterVersion #any valid master version
     ```
 
 1. Stand up the GKE cluster:
@@ -125,7 +124,7 @@ After cloning this repo, from this working directory, run these commands:
     the minimally disruptive change to achieve the desired state.
 
 	> **Note:** Pulumi auto-generates a suffix for all objects.
-    > See the [Pulumi Programming Model](../../reference/programming-model.md#autonaming) for more info.
+    > See the [Pulumi Programming Model](https://www.pulumi.com/docs/intro/concepts/programming-model/#autonaming) for more info.
     >
     > ```
     > clusterName    : "helloworld-2a6de9a"
@@ -144,7 +143,7 @@ After cloning this repo, from this working directory, run these commands:
 
     To access your new Kubernetes cluster using `kubectl`, we need to setup the
     `kubeconfig` file and download `kubectl`. We can leverage the Pulumi
-    stack output in the CLI, as Pulumi faciliates exporting these objects for us.
+    stack output in the CLI, as Pulumi facilitates exporting these objects for us.
 
     ```bash
     $ pulumi stack output kubeconfig > kubeconfig
@@ -195,7 +194,7 @@ After cloning this repo, from this working directory, run these commands:
     // Create resources for the Kubernetes Guestbook from its YAML manifests
     const guestbook = new k8s.yaml.ConfigFile("guestbook",
         {
-            file: "https://raw.githubusercontent.com/pulumi/pulumi-kubernetes/master/tests/examples/yaml-guestbook/yaml/guestbook.yaml",
+            file: "https://raw.githubusercontent.com/pulumi/pulumi-kubernetes/master/tests/sdk/nodejs/examples/yaml-guestbook/yaml/guestbook.yaml",
             transformations: [
                 (obj: any) => {
                     // Do transformations on the YAML to use the same namespace and

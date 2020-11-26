@@ -1,10 +1,10 @@
 // Copyright 2016-2018, Pulumi Corporation.  All rights reserved.
 
-import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
+import * as pulumi from "@pulumi/pulumi";
 
 // Create a resource group to deploy all ARM template resources into.
-const resourceGroup = new azure.core.ResourceGroup("test", { location: azure.Locations.WestUS });
+const resourceGroup = new azure.core.ResourceGroup("test");
 
 // Create an ARM template deployment using an ordinary JSON ARM template. This could be read from disk, of course.
 const armDeployment = new azure.core.TemplateDeployment("test-dep", {
@@ -19,50 +19,49 @@ const armDeployment = new azure.core.TemplateDeployment("test-dep", {
           "allowedValues": [
             "Standard_LRS",
             "Standard_GRS",
-            "Standard_ZRS"
+            "Standard_ZRS",
           ],
           "metadata": {
-            "description": "Storage Account type"
-          }
-        }
+            "description": "Storage Account type",
+          },
+        },
       },
       "variables": {
         "location": "[resourceGroup().location]",
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'storage')]",
         "publicIPAddressName": "[concat('myPublicIp', uniquestring(resourceGroup().id))]",
         "publicIPAddressType": "Dynamic",
-        "apiVersion": "2015-06-15",
-        "dnsLabelPrefix": `${pulumi.getProject()}-${pulumi.getStack()}`
+        "dnsLabelPrefix": `${pulumi.getProject()}-${pulumi.getStack()}`,
       },
       "resources": [
         {
           "type": "Microsoft.Storage/storageAccounts",
           "name": "[variables('storageAccountName')]",
-          "apiVersion": "[variables('apiVersion')]",
+          "apiVersion": "2019-04-01",
           "location": "[variables('location')]",
-          "properties": {
-            "accountType": "[parameters('storageAccountType')]"
-          }
+          "sku": {
+            "name": "[parameters('storageAccountType')]",
+          },
         },
         {
           "type": "Microsoft.Network/publicIPAddresses",
-          "apiVersion": "[variables('apiVersion')]",
+          "apiVersion": "2019-09-01",
           "name": "[variables('publicIPAddressName')]",
           "location": "[variables('location')]",
           "properties": {
             "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
             "dnsSettings": {
-              "domainNameLabel": "[variables('dnsLabelPrefix')]"
-            }
-          }
-        }
+              "domainNameLabel": "[variables('dnsLabelPrefix')]",
+            },
+          },
+        },
       ],
       "outputs": {
         "storageAccountName": {
           "type": "string",
-          "value": "[variables('storageAccountName')]"
-        }
-      }
+          "value": "[variables('storageAccountName')]",
+        },
+      },
     }),
     parameters: {
         "storageAccountType": "Standard_GRS",

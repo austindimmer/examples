@@ -1,14 +1,13 @@
 {
     "name": "aws-ts-eks-migrate-nodegroups",
     "devDependencies": {
-        "typescript": "^3.0.0",
-        "@types/node": "latest"
+        "@types/node": "^8.0.0"
     },
     "dependencies": {
-        "@pulumi/aws": "latest",
-        "@pulumi/awsx": "latest",
-        "@pulumi/kubernetes": "latest",
-        "@pulumi/pulumi": "latest",
-        "@pulumi/eks": "latest"
+        "@pulumi/aws": "^3.0.0",
+        "@pulumi/awsx": "^0.20.0",
+        "@pulumi/kubernetes": "^2.0.0",
+        "@pulumi/pulumi": "^2.0.0",
+        "@pulumi/eks": "^0.19.0"
     }
 }

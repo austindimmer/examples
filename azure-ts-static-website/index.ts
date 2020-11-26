@@ -1,8 +1,7 @@
 // Copyright 2016-2018, Pulumi Corporation.  All rights reserved.
 
-import * as pulumi from "@pulumi/pulumi";
 import * as azure from "@pulumi/azure";
-import { StorageStaticWebsite } from "./staticWebsite";
+import * as pulumi from "@pulumi/pulumi";
 
 // Create an Azure Resource Group
 const resourceGroup = new azure.core.ResourceGroup("website-rg", {
@@ -15,31 +14,27 @@ const storageAccount = new azure.storage.Account("websitesa", {
     accountReplicationType: "LRS",
     accountTier: "Standard",
     accountKind: "StorageV2",
-});
-
-// There's currently no way to enable the Static Web Site feature of a storage account via ARM
-// Therefore, we created a custom resource which wraps corresponding Azure CLI commands
-const staticWebsite = new StorageStaticWebsite("website-static", {
-    accountName: storageAccount.name,
+    staticWebsite: {
+        indexDocument: "index.html",
+    },
 });
 
 // Upload the files
-["index.html", "404.html"].map(name => 
+["index.html", "404.html"].map(name =>
     new azure.storage.Blob(name, {
         name,
-        resourceGroupName: resourceGroup.name,
         storageAccountName: storageAccount.name,
-        storageContainerName: staticWebsite.webContainerName,
-        type: "block",
-        source: `./wwwroot/${name}`,
+        storageContainerName: "$web",
+        type: "Block",
+        source: new pulumi.asset.FileAsset(`./wwwroot/${name}`),
         contentType: "text/html",
-    })
+    }),
 );
 
 // Web endpoint to the website
-export const staticEndpoint = staticWebsite.endpoint;
+export const staticEndpoint = storageAccount.primaryWebEndpoint;
 
-// Optionally, we can add a CDN in front of the website
+// We can add a CDN in front of the website
 const cdn =  new azure.cdn.Profile("website-cdn", {
     resourceGroupName: resourceGroup.name,
     sku: "Standard_Microsoft",
@@ -48,13 +43,13 @@ const cdn =  new azure.cdn.Profile("website-cdn", {
 const endpoint = new azure.cdn.Endpoint("website-cdn-ep", {
     resourceGroupName: resourceGroup.name,
     profileName: cdn.name,
-    originHostHeader: staticWebsite.hostName,
+    originHostHeader: storageAccount.primaryWebHost,
     origins: [{
         name: "blobstorage",
-        hostName: staticWebsite.hostName,
+        hostName: storageAccount.primaryWebHost,
     }],
 });
 
-// CDN endpoint to the website. 
+// CDN endpoint to the website.
 // Allow it some time after the deployment to get ready.
 export const cdnEndpoint = pulumi.interpolate`https://${endpoint.hostName}/`;

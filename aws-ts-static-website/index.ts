@@ -1,5 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
 import * as fs from "fs";
 import * as mime from "mime";
@@ -28,7 +30,7 @@ const contentBucket = new aws.s3.Bucket("contentBucket",
         website: {
             indexDocument: "index.html",
             errorDocument: "404.html",
-        }
+        },
     });
 
 // crawlDirectory recursive crawls the provided directory, applying the provided function
@@ -96,7 +98,7 @@ if (config.certificateArn === undefined) {
     }, { provider: eastRegion });
 
     const domainParts = getDomainAndSubdomain(config.targetDomain);
-    const hostedZoneId = aws.route53.getZone({ name: domainParts.parentDomain }).id;
+    const hostedZoneId = aws.route53.getZone({ name: domainParts.parentDomain }, { async: true }).then(zone => zone.zoneId);
 
     /**
      *  Create a DNS record to prove that we _own_ the domain we're requesting a certificate for.
@@ -177,7 +179,7 @@ const distributionArgs: aws.cloudfront.DistributionArgs = {
     // "100" is the least broad, and also the least expensive.
     priceClass: "PriceClass_100",
 
-    // You can customize error responses. When CloudFront recieves an error from the origin (e.g. S3 or some other
+    // You can customize error responses. When CloudFront receives an error from the origin (e.g. S3 or some other
     // web service) it can return a different error code, and return the response for a different resource.
     customErrorResponses: [
         { errorCode: 404, responseCode: 404, responsePagePath: "/404.html" },
@@ -228,12 +230,12 @@ function getDomainAndSubdomain(domain: string): { subdomain: string, parentDomai
 function createAliasRecord(
     targetDomain: string, distribution: aws.cloudfront.Distribution): aws.route53.Record {
     const domainParts = getDomainAndSubdomain(targetDomain);
-    const hostedZone = aws.route53.getZone({ name: domainParts.parentDomain });
+    const hostedZoneId = aws.route53.getZone({ name: domainParts.parentDomain }, { async: true }).then(zone => zone.zoneId);
     return new aws.route53.Record(
         targetDomain,
         {
             name: domainParts.subdomain,
-            zoneId: hostedZone.zoneId,
+            zoneId: hostedZoneId,
             type: "A",
             aliases: [
                 {

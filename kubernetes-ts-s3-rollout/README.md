@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Kubernetes: Triggering a rollout of an app by changing data in S3
+# App Rollout via Data Change in Amazon S3
 
 This example is similar in principle to the [`ConfigMap`-based rollout example][rollout], except a
 rollout is triggered any time the data in S3 changes.
@@ -11,12 +11,10 @@ directory; this program reads that file and puts it into an S3 bucket. Hence, ch
 file will cause register as a change in the S3 bucket's data, which will trigger a rollout of the
 nginx `Deployment`.
 
-![configmapRollout](images/rollout.gif "ConfigMap-induced Rollout")
-
 ## Running the App
 
-Follow the steps in [Pulumi Installation and Setup](https://docs.pulumi.com/install/) and
-[Configuring Pulumi Kubernetes](https://docs.pulumi.com/reference/kubernetes.html#configuration) to
+Follow the steps in [Pulumi Installation and Setup](https://www.pulumi.com/docs/get-started/install/) and
+[Configuring Pulumi Kubernetes](https://www.pulumi.com/docs/intro/cloud-providers/kubernetes/setup/) to
 get setup with Pulumi and Kubernetes.
 
 Install dependencies:

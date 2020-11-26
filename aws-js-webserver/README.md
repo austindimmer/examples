@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# AWS EC2 Web Server
+# Web Server Using Amazon EC2
 
 This example deploys a simple AWS EC2 virtual machine running a Python web server.
 
@@ -10,8 +10,8 @@ To deploy your infrastructure, follow the below steps.
 
 ### Prerequisites
 
-1. [Install Pulumi](https://www.pulumi.com/docs/reference/install/)
-2. [Configure AWS Credentials](https://www.pulumi.com/docs/reference/clouds/aws/setup/)
+1. [Install Pulumi](https://www.pulumi.com/docs/get-started/install/)
+2. [Configure AWS Credentials](https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/)
 
 ### Steps
 

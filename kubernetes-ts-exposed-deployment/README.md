@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Kubernetes: Exposing a Deployment with a public IP address
+# Exposing a Deployment with a Public IP Address
 
 Deploys `nginx` to a Kubernetes cluster, and publicly exposes it to the Internet with an IP address,
 using a Kubernetes `Service`.
@@ -15,8 +15,8 @@ address, in this example we are also able to use `curl` to reach the `nginx` ser
 ## Running the App
 
 If you haven't already, follow the steps in [Pulumi Installation and
-Setup](https://docs.pulumi.com/install/) and [Configuring Pulumi
-Kubernetes](https://docs.pulumi.com/reference/kubernetes.html#configuration) to get setup with
+Setup](https://www.pulumi.com/docs/get-started/install/) and [Configuring Pulumi
+Kubernetes](https://www.pulumi.com/docs/intro/cloud-providers/kubernetes/setup/) to get setup with
 Pulumi and Kubernetes.
 
 Now, install dependencies:

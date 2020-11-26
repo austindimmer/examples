@@ -1,7 +1,9 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as aws from "@pulumi/aws";
-import * as config from "./config";
+import * as pulumi from "@pulumi/pulumi";
 import { createUserData, renderConfigFile } from "pcloudinit";
+import * as config from "./config";
 
 const webSg = new aws.ec2.SecurityGroup("webServerSecurityGroup", {
     description: "Enable HTTP and SSH access",
@@ -21,17 +23,17 @@ const amiId = aws.getAmi({
         },
         {
             name: "virtualization-type",
-            values: ["hvm"]
-        }
+            values: ["hvm"],
+        },
     ],
     mostRecent: true,
     owners: ["137112412989"],
-});
+}, { async: true }).then(ami => ami.id);
 
 const webServer = new aws.ec2.Instance("webServer", {
-    ami: amiId.id,
+    ami: amiId,
     instanceType: config.instanceType,
-    securityGroups: [ webSg.name ],
+    vpcSecurityGroupIds: [ webSg.id ],
     userData: createUserData(
         [ "install_ruby_2_3_1", "install_mysql", "configure_mysql", "install_application" ],
         {

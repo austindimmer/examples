@@ -1,7 +1,8 @@
-import { Container } from "@azure/cosmos";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
+import { CosmosClient } from "@azure/cosmos";
 import * as azure from "@pulumi/azure";
 import * as pulumi from "@pulumi/pulumi";
-import { getContainer } from "./cosmosclient";
 
 const config = new pulumi.Config();
 // Read a list of target locations from the config file:
@@ -15,39 +16,45 @@ const resourceGroup = new azure.core.ResourceGroup("UrlShorterner", {
 });
 
 // Cosmos DB with a single write region (primary location) and multiple read replicas
-const cosmosdb = new azure.cosmosdb.Account("UrlStore", {
+const account = new azure.cosmosdb.Account("UrlStore", {
     resourceGroupName: resourceGroup.name,
     location: primaryLocation,
     geoLocations: locations.map((location, failoverPriority) => ({ location, failoverPriority })),
     offerType: "Standard",
     consistencyPolicy: {
         consistencyLevel: "Session",
-        maxIntervalInSeconds: 5,
-        maxStalenessPrefix: 100,
+        maxIntervalInSeconds: 300,
+        maxStalenessPrefix: 100000,
     },
 });
 
 // Define a database under the Cosmos DB Account
 const database = new azure.cosmosdb.SqlDatabase("Database", {
     resourceGroupName: resourceGroup.name,
-    accountName: cosmosdb.name,
-    name: "thedb",
+    accountName: account.name,
+});
+
+// Define a SQL Collection under the Cosmos DB Database
+const collection = new azure.cosmosdb.SqlContainer("Urls", {
+    resourceGroupName: resourceGroup.name,
+    accountName: account.name,
+    databaseName: database.name,
 });
 
 // Traffic Manager as a global HTTP endpoint
-const profile = new azure.trafficmanager.Profile("UrlShortEndpoint", {
+const profile = new azure.network.TrafficManagerProfile("UrlShortEndpoint", {
     resourceGroupName: resourceGroup.name,
     trafficRoutingMethod: "Performance",
-    dnsConfigs: [{
+    dnsConfig: {
         // Subdomain must be globally unique, so we default it with the full resource group name
         relativeName: resourceGroup.name,
         ttl: 60,
-    }],
-    monitorConfigs: [{
+    },
+    monitorConfig: {
         protocol: "HTTP",
         port: 80,
         path: "/api/ping",
-    }]
+    },
 });
 
 // Azure Function to accept new URL shortcodes and save to Cosmos DB
@@ -56,17 +63,16 @@ const fn = new azure.appservice.HttpEventSubscription("AddUrl", {
     location: primaryLocation,
     methods: ["POST"],
     callbackFactory: () => {
-        const endpoint = cosmosdb.endpoint.get();
-        const masterKey = cosmosdb.primaryMasterKey.get();
+        const endpoint = account.endpoint.get();
+        const key = account.primaryMasterKey.get();
 
-        let container: Container;
+        const client = new CosmosClient({ endpoint, key, connectionPolicy: { preferredLocations: [primaryLocation] } });
+        const container = client.database(database.name.get()).container(collection.name.get());
         return async (_, request: azure.appservice.HttpRequest) => {
-            container = container || await getContainer(endpoint, masterKey, primaryLocation);
-
             await container.items.create(request.body);
             return { status: 200, body: "Short URL saved" };
         };
-    }
+    },
 });
 export const addEndpoint = fn.url;
 
@@ -78,13 +84,12 @@ for (const location of locations) {
         location,
         route: "{key}",
         callbackFactory: () => {
-            const endpoint = cosmosdb.endpoint.get();
-            const masterKey = cosmosdb.primaryMasterKey.get();
+            const endpoint = account.endpoint.get();
+            const key = account.primaryMasterKey.get();
 
-            let container: Container;
+            const client = new CosmosClient({ endpoint, key, connectionPolicy: { preferredLocations: [location] } });
+            const container = client.database(database.name.get()).container(collection.name.get());
             return async (_, request: azure.appservice.HttpRequest) => {
-                container = container || await getContainer(endpoint, masterKey, location);
-
                 const key = request.params["key"];
                 if (key === "ping") {
                     // Handle traffic manager live pings
@@ -100,19 +105,19 @@ for (const location of locations) {
                             : { status: 404, body: "" };
                 } catch (e) {
                     // Cosmos SDK throws an error for non-existing documents
-                    return { status: 404, body: "" }
+                    return { status: 404, body: "" };
                 }
             };
-        }
+        },
     });
 
     const app = fn.functionApp;
 
     // An endpoint per region for Traffic Manager, link to the corresponding Function App
-    new azure.trafficmanager.Endpoint(`tme${location}`, {
+    const endpoint = new azure.network.TrafficManagerEndpoint(`tme${location}`, {
         resourceGroupName: resourceGroup.name,
         profileName: profile.name,
-        type: 'azureEndpoints',
+        type: "azureEndpoints",
         targetResourceId: app.id,
         target: app.defaultHostname,
         endpointLocation: app.location,
@@ -120,5 +125,5 @@ for (const location of locations) {
 }
 
 export const endpoint = profile.fqdn.apply(h => {
-    return `http://${h}/api/{key}`;
+    return `http://${h}/api/`;
 });

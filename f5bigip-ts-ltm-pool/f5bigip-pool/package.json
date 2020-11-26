@@ -1,10 +1,10 @@
 {
     "name": "aws-typescript",
     "devDependencies": {
-        "@types/node": "latest"
+        "@types/node": "^8.0.0"
     },
     "dependencies": {
-        "@pulumi/pulumi": "latest",
-        "@pulumi/f5bigip": "latest"
+        "@pulumi/pulumi": "^2.0.0",
+        "@pulumi/f5bigip": "^2.0.0"
     }
 }

@@ -1,9 +1,8 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# AWS EKS Cluster
+# Amazon EKS Cluster
 
-This example deploys an EKS Kubernetes cluster with an EBS-backed StorageClass and deploys the Kubernetes Dashboard
-into the cluster.
+This example deploys an EKS Kubernetes cluster with an EBS-backed StorageClass and deploys the Kubernetes Dashboard into the cluster.
 
 ## Deploying the App
 
@@ -11,16 +10,16 @@ To deploy your infrastructure, follow the below steps.
 
 ### Prerequisites
 
-1. [Install Pulumi](https://www.pulumi.com/docs/reference/install/)
-2. [Install Node.js 8.11.3](https://nodejs.org/en/download/)
-3. [Configure AWS Credentials](https://www.pulumi.com/docs/reference/clouds/aws/setup/)
-4. [Install `aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html#get-started-kubectl)
+1. [Install Pulumi](https://www.pulumi.com/docs/get-started/install/)
+2. [Install Node.js](https://nodejs.org/en/download/)
+3. [Configure AWS Credentials](https://www.pulumi.com/docs/intro/cloud-providers/aws/setup/)
+4. [Install `aws-iam-authenticator`](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html)
 
 If you'd like to follow the optional instructions in step 7 in order to deploy a Helm chart into your cluster, you'll
 also need to set up the Helm client:
 
 1. [Install the Helm client binaries](https://docs.helm.sh/using_helm/#installing-helm)
-2. Initialize the Helm client:
+2. If you are using Helm v2, initialize the Helm client:
 
     ```bash
     $ helm init --client-only
@@ -113,10 +112,10 @@ After cloning this repo, from this working directory, run these commands:
       browser.
     - Choose `Token` authentication, paste the token retrieved earlier into the `Token` field, and sign in.
 
-7. From there, feel free to experiment. Simply making edits and running `pulumi up` will incrementally update your stack.
-   For example, in order to deploy a Helm chart into your cluster, simply import the `@pulumi/kubernetes/helm` package,
+7. From there, feel free to experiment. Make edits and run `pulumi up` to incrementally update your stack.
+   For example, in order to deploy a Helm chart into your cluster, import the `@pulumi/kubernetes/helm` package,
    add a `Chart` resource that targets the EKS cluster to `index.ts`, and run `pulumi up`. Note that the Helm client
-   must be set up in order for the chart to deploy; see the "Prerequisites" section for details.
+   must be set up in order for the chart to deploy. For more details, see the [Prerequisites](#prerequisites) list.
 
     ```typescript
     import * as helm from "@pulumi/kubernetes/helm";

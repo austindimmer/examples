@@ -1,12 +1,12 @@
 {
     "name": "gcp-rails",
     "devDependencies": {
-        "@types/node": "latest"
+        "@types/node": "^8.0.0"
     },
     "dependencies": {
-        "@pulumi/docker": "latest",
-        "@pulumi/gcp": "latest",
-        "@pulumi/kubernetes": "latest",
-        "@pulumi/pulumi": "latest"
+        "@pulumi/docker": "^2.0.0",
+        "@pulumi/gcp": "^4.0.0",
+        "@pulumi/kubernetes": "^2.0.0",
+        "@pulumi/pulumi": "^2.0.0"
     }
 }

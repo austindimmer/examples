@@ -1,12 +1,12 @@
 {
     "name": "aws-typescript",
     "devDependencies": {
-        "@types/node": "^11.13.6"
+        "@types/node": "^8.0.0"
     },
     "dependencies": {
-        "@pulumi/aws": "latest",
-        "@pulumi/awsx": "latest",
-        "@pulumi/pulumi": "latest",
+        "@pulumi/aws": "^3.0.0",
+        "@pulumi/awsx": "^0.20.0",
+        "@pulumi/pulumi": "^2.0.0",
         "@types/auth0-js": "^9.10.1",
         "@types/jsonwebtoken": "^8.3.2",
         "jsonwebtoken": "^8.5.1",

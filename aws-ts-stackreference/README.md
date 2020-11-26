@@ -1,9 +1,7 @@
-[![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
-
 # StackReference Example
 
 This example creates a "team" EC2 Instance with tags set from _upstream_ "company" and "department" 
-stacks via [StackReference](https://www.pulumi.com/docs/reference/organizing-stacks-projects/#inter-stack-dependencies).
+stacks via [StackReference](https://www.pulumi.com/docs/intro/concepts/organizing-stacks-projects/#inter-stack-dependencies).
 
 ```
 /**
@@ -20,7 +18,7 @@ stacks via [StackReference](https://www.pulumi.com/docs/reference/organizing-sta
     ```bash
     $ cd company
     $ npm install
-    ````
+    ```
 
 1. Create a new stack:
 
@@ -31,7 +29,7 @@ stacks via [StackReference](https://www.pulumi.com/docs/reference/organizing-sta
 1. Set the required configuration variables:
 
     ```bash
-    $ pulumi config set companyName 'ACME Widget Co.'
+    $ pulumi config set companyName 'ACME Widget Company'
     ```
 
 1. Deploy everything with the `pulumi up` command. 

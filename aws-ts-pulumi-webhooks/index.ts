@@ -1,11 +1,10 @@
-// Copyright 2016-2018, Pulumi Corporation.  All rights reserved.
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
 
-import * as pulumi from "@pulumi/pulumi";
 import * as awsx from "@pulumi/awsx";
+import * as pulumi from "@pulumi/pulumi";
+import { IncomingWebhook, IncomingWebhookSendArguments } from "@slack/webhook";
 
 import * as crypto from "crypto";
-
-import * as slack from "@slack/client";
 
 import { formatSlackMessage } from "./util";
 
@@ -16,26 +15,26 @@ const stackConfig = {
     // webhook's settings.
     sharedSecret: config.get("sharedSecret"),
 
-    slackToken: config.require("slackToken"),
+    slackWebhook: config.requireSecret("slackWebhook"),
     slackChannel: config.require("slackChannel"),
 };
 
 // Just logs information from an incoming webhook request.
 function logRequest(req: awsx.apigateway.Request) {
-    const webhookID = req.headers["pulumi-webhook-id"];
-    const webhookKind = req.headers["pulumi-webhook-kind"];
+    const webhookID = req.headers !== undefined ? req.headers["pulumi-webhook-id"] : "";
+    const webhookKind = req.headers !== undefined ? req.headers["pulumi-webhook-kind"] : "";
     console.log(`Received webhook from Pulumi ${webhookID} [${webhookKind}]`);
 }
 
 // Webhooks can optionally be configured with a shared secret, so that webhook handlers like this app can authenticate
 // message integrity. Rejects any incoming requests that don't have a valid "pulumi-webhook-signature" header.
 function authenticateRequest(req: awsx.apigateway.Request): awsx.apigateway.Response | undefined {
-    const webhookSig = req.headers["pulumi-webhook-signature"];
+    const webhookSig = req.headers !== undefined ? req.headers["pulumi-webhook-signature"] : "";
     if (!stackConfig.sharedSecret || !webhookSig) {
         return undefined;
     }
 
-    const payload = req.body!.toString();
+    const payload = Buffer.from(req.body!.toString(), req.isBase64Encoded ? "base64" : "utf8");
     const hmacAlg = crypto.createHmac("sha256", stackConfig.sharedSecret);
     const hmac = hmacAlg.update(payload).digest("hex");
 
@@ -48,13 +47,19 @@ function authenticateRequest(req: awsx.apigateway.Request): awsx.apigateway.Resp
     return undefined;
 }
 
+// unsecret the webhook so we can add it to the handler
+(<any>stackConfig.slackWebhook).isSecret = false;
+
 const webhookHandler = new awsx.apigateway.API("pulumi-webhook-handler", {
+    restApiArgs: {
+        binaryMediaTypes: ["application/json"],
+    },
     routes: [{
         path: "/",
         method: "GET",
         eventHandler: async () => ({
             statusCode: 200,
-            body: "🍹 Pulumi Webhook Responder🍹\n"
+            body: "🍹 Pulumi Webhook Responder🍹\n",
         }),
     }, {
         path: "/",
@@ -66,24 +71,24 @@ const webhookHandler = new awsx.apigateway.API("pulumi-webhook-handler", {
                 return authenticateResult;
             }
 
-            const webhookKind = req.headers["pulumi-webhook-kind"];
-            const payload = req.body!.toString();
+            const webhookKind = req.headers !== undefined ? req.headers["pulumi-webhook-kind"] : "";
+            const bytes = req.body!.toString();
+            const payload = Buffer.from(bytes, "base64").toString();
             const parsedPayload = JSON.parse(payload);
             const prettyPrintedPayload = JSON.stringify(parsedPayload, null, 2);
 
-            const client = new slack.WebClient(stackConfig.slackToken);
+            const webhook = new IncomingWebhook(stackConfig.slackWebhook.get());
 
             const fallbackText = `Pulumi Service Webhook (\`${webhookKind}\`)\n` + "```\n" + prettyPrintedPayload + "```\n";
-            const messageArgs: slack.ChatPostMessageArguments = {
+            const messageArgs: IncomingWebhookSendArguments = {
                 channel: stackConfig.slackChannel,
                 text: fallbackText,
-                as_user: true,
-            }
+            };
 
             // Format the Slack message based on the kind of webhook received.
             const formattedMessageArgs = formatSlackMessage(webhookKind, parsedPayload, messageArgs);
 
-            await client.chat.postMessage(formattedMessageArgs);
+            await webhook.send(formattedMessageArgs);
             return { statusCode: 200, body: `posted to Slack channel ${stackConfig.slackChannel}\n` };
         },
     }],

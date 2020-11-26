@@ -7,18 +7,18 @@ infrastructure-as-code, and then deploys a Kubernetes Deployment into it, to tes
 demonstrates that you can manage both the Kubernetes objects themselves, in addition to underlying cloud infrastructure,
 using a single configuration language (in this case, TypeScript), tool, and workflow.
 
-# Prerequisites
+## Prerequisites
 
-Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/reference/install/).
+Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/get-started/install/).
 
 We will be deploying to Google Cloud Platform (GCP), so you will need an account. If you don't have an account,
 [sign up for free here](https://cloud.google.com/free/). In either case,
-[follow the instructions here](https://www.pulumi.com/docs/reference/clouds/gcp/setup/) to connect Pulumi to your GCP account.
+[follow the instructions here](https://www.pulumi.com/docs/intro/cloud-providers/gcp/setup/) to connect Pulumi to your GCP account.
 
 This example assumes that you have GCP's `gcloud` CLI on your path. This is installed as part of the
 [GCP SDK](https://cloud.google.com/sdk/).
 
-# Running the Example
+## Running the Example
 
 After cloning this repo, `cd` into it and run these commands. A GKE Kubernetes cluster will appear!
 
@@ -34,7 +34,6 @@ After cloning this repo, `cd` into it and run these commands. A GKE Kubernetes c
     $ pulumi config set gcp:project [your-gcp-project-here]
     $ pulumi config set gcp:zone us-west1-a # any valid GCP zone here
     $ pulumi config set password --secret [your-cluster-password-here]
-    $ pulumi config set masterVersion #any valid MasterVersion
     ```
 
    By default, your cluster will have 3 nodes of type `n1-standard-1`. This is configurable, however; for instance
@@ -43,6 +42,7 @@ After cloning this repo, `cd` into it and run these commands. A GKE Kubernetes c
    ```bash
    $ pulumi config set nodeCount 5
    $ pulumi config set nodeMachineType n1-standard-2
+   $ pulumi config set masterVersion #any valid MasterVersion
    ```
 
    This shows how stacks can be configurable in useful ways. You can even change these after provisioning.

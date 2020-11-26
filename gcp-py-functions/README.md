@@ -1,13 +1,13 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# GCP Functions
+# Google Cloud Functions in Python
 
 This example shows how to deploy a Python-based Google Cloud Function.
 
 The deployed Cloud Function allows you to notify a friend via SMS about how long it will take to
 arrive at a location. This uses the Google Maps API and Twilio, and also benefits from using a
 [Flic button](https://flic.io) and [IFTTT](https://ifttt.com). But none of that is necessary to
-use Pulumi to provision the Google Cloud Platform resources.
+use Pulumi to provision the Google Cloud Platform functions.
 
 ## Creating the Stack
 
@@ -24,14 +24,15 @@ use Pulumi to provision the Google Cloud Platform resources.
     pulumi config set gcp:region <region>
     ```
 
-1. Download dependencies:
+1. Create a Python virtualenv, activate it, and install dependencies:
+
+    This installs the dependent packages [needed](https://www.pulumi.com/docs/intro/concepts/how-pulumi-works/) for our Pulumi program.
+
 
     ```bash
-    # (Optional) Create a virtualenv environment.
-    virtualenv -p python3 venv
-    source venv/bin/activate
-
-    pip3 install -r requirements.txt
+    $ python3 -m venv venv
+    $ source venv/bin/activate
+    $ pip3 install -r requirements.txt
     ```
 
 1. Run `pulumi up` to preview and deploy changes:
@@ -48,8 +49,7 @@ use Pulumi to provision the Google Cloud Platform resources.
     Duration: 1m2s
     ```
 
-Once the application is deployed, you can start accessing the Google Cloud Function by making an
-HTTP request to the function's endpoint. It is exported from the stack's as `fxn_url`.
+Once the application is deployed, you can start accessing the Google Cloud Function by making an HTTP request to the function's endpoint. It is exported from the stack's as `fxn_url`.
 
 ```bash
 $ pulumi stack output fxn_url
@@ -68,7 +68,7 @@ Sent text message to...
 
 ### Google Maps for Travel Time
 
-The application uses the [Google Maps API](https://developers.google.com/maps/documentation/) to estimate travel time. To set this up:
+The application uses the [Google Maps API](https://developers.google.com/maps/documentation/) to estimate travel time data. To set this up:
 
 1. Get a [Google Maps](https://cloud.google.com/maps-platform/) API key by clicking 'Get started'.
 
@@ -134,3 +134,5 @@ To make sure to include the button presser's location, you can use [IFTTT](https
     * Select your Flic button and the appropriate gesture from the menu.
     * For "Then" select the "Make a web request" service
     * Under URL enter following (replace `<FUNCTION_URL>` with the value from `pulumi stack output fxn_url`): `<FUNCTION_URL>?long={{Longitude}}&lat={{Latitude}}`
+
+Get started on [Google Cloud](https://www.pulumi.com/docs/get-started/gcp/) with Pulumi today.

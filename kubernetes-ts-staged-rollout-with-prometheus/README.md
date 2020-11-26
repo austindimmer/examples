@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Kubernetes: Staged application rollout gated by Prometheus checks
+# Staged App Rollout Gated by Prometheus Checks
 
 Demonstrates how to create a staged rollout (from 3-replica canary -> 10-replica staging), gated by
 checking that the P90 response time reported by Prometheus is less than some amount. We first deploy
@@ -63,7 +63,7 @@ can see `canary-example-app` and `canary-staging-app` created.
 
 1. **IMPORTANT NOTE:** The code in `index.ts` is meant to be run out-of-cluster (_e.g._, on your
    local machine). It will thus call `kubectl port-forward` on your behalf so that the Prometheus
-   service is fowarded to your local machine, which allows this program to poll for metrics. **If
+   service is forwarded to your local machine, which allows this program to poll for metrics. **If
    you are running Pulumi in-cluster, you can comment out this part of the example.**
 
 1. Perform the deployment:
@@ -121,7 +121,7 @@ can see `canary-example-app` and `canary-staging-app` created.
    that was computed by the promise is `export`ed, which causes Pulumi to report its value just
    before it terminates.
 
-[install]: https://docs.pulumi.com/install/
-[configuration]: https://docs.pulumi.com/reference/kubernetes.html#configuration
+[install]: https://www.pulumi.com/docs/get-started/install/
+[configuration]: https://www.pulumi.com/docs/intro/cloud-providers/kubernetes/setup/
 [p8s]: https://prometheus.io/
 [helm]: https://www.helm.sh/

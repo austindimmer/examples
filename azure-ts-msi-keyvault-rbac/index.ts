@@ -1,7 +1,8 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as azure from "@pulumi/azure";
+import * as pulumi from "@pulumi/pulumi";
 import * as random from "@pulumi/random";
-import { execSync} from "child_process";
 
 // Create a resource group
 const resourceGroup = new azure.core.ResourceGroup("resourceGroup");
@@ -15,13 +16,12 @@ const storageAccount = new azure.storage.Account("storage", {
 
 // The container to put our files into
 const storageContainer = new azure.storage.Container("files", {
-    resourceGroupName: resourceGroup.name,
     storageAccountName: storageAccount.name,
     containerAccessType: "private",
 });
 
 // Azure SQL Server that we want to access from the application
-const administratorLoginPassword = new random.RandomString("password", { length: 16 }).result;
+const administratorLoginPassword = new random.RandomPassword("password", { length: 16, special: true }).result;
 const sqlServer = new azure.sql.SqlServer("sqlserver", {
     resourceGroupName: resourceGroup.name,
     // The login and password are required but won't be used in our application
@@ -42,10 +42,9 @@ const connectionString = pulumi.interpolate`Server=tcp:${sqlServer.name}.databas
 
 // A file in Blob Storage that we want to access from the application
 const textBlob = new azure.storage.Blob("text", {
-    resourceGroupName: resourceGroup.name,
     storageAccountName: storageAccount.name,
     storageContainerName: storageContainer.name,
-    type: "block",
+    type: "Block",
     source: "./README.md",
 });
 
@@ -60,31 +59,22 @@ const appServicePlan = new azure.appservice.Plan("asp", {
 });
 
 // ASP.NET deployment package
-const blob = new azure.storage.ZipBlob("zip", {
-    resourceGroupName: resourceGroup.name,
+const blob = new azure.storage.Blob("zip", {
     storageAccountName: storageAccount.name,
     storageContainerName: storageContainer.name,
-    type: "block",
+    type: "Block",
 
-    content: new pulumi.asset.FileArchive("./webapp/bin/Debug/netcoreapp2.2/publish")
+    source: new pulumi.asset.FileArchive("./webapp/bin/Debug/netcoreapp2.2/publish"),
 });
 
-const clientConfig = azure.core.getClientConfig({});
-const tenantId = clientConfig.tenantId;
-
-// Currently, only service principal ID is available in the context.  If we are provided the
-// principle in the config, then just use it.  Otherwise, if logged in with a user, find their ID
-// via Azure CLI. see https://github.com/terraform-providers/terraform-provider-azurerm/issues/3234
-const currentPrincipal = clientConfig.servicePrincipalObjectId !== ""
-        ? clientConfig.servicePrincipalObjectId
-        : <string>JSON.parse(execSync("az ad signed-in-user show --query objectId").toString());
+const clientConfig = azure.core.getClientConfig({ async: true });
+const tenantId = clientConfig.then(config => config.tenantId);
+const currentPrincipal = clientConfig.then(config => config.objectId);
 
 // Key Vault to store secrets (e.g. Blob URL with SAS)
 const vault = new azure.keyvault.KeyVault("vault", {
     resourceGroupName: resourceGroup.name,
-    sku: {
-        name: "standard",
-    },
+    skuName: "standard",
     tenantId: tenantId,
     accessPolicies: [{
         tenantId,
@@ -92,7 +82,7 @@ const vault = new azure.keyvault.KeyVault("vault", {
         // secrets to/from the Key Vault. Otherwise, 'pulumi up' and 'pulumi destroy' operations will fail.
         objectId: currentPrincipal,
         secretPermissions: ["delete", "get", "list", "set"],
-    }]
+    }],
 });
 
 // Put the URL of the zip Blob to KV
@@ -100,7 +90,7 @@ const secret = new azure.keyvault.Secret("deployment-zip", {
     keyVaultId: vault.id,
     value: azure.storage.signedBlobReadUrl(blob, storageAccount),
 });
-const secretUri = pulumi.interpolate`${secret.vaultUri}secrets/${secret.name}/${secret.version}`;
+const secretUri = pulumi.interpolate`${vault.vaultUri}secrets/${secret.name}/${secret.version}`;
 
 // The application hosted in App Service
 const app = new azure.appservice.AppService("app", {
@@ -109,7 +99,7 @@ const app = new azure.appservice.AppService("app", {
 
     // A system-assigned managed service identity to be used for authentication and authorization to the SQL Database and the Blob Storage
     identity: {
-        type: "SystemAssigned"
+        type: "SystemAssigned",
     },
 
     appSettings: {
@@ -124,15 +114,15 @@ const app = new azure.appservice.AppService("app", {
     connectionStrings: [{
         name: "db",
         value: connectionString,
-        type: "SQLAzure"
-    }]
+        type: "SQLAzure",
+    }],
 });
 
 // Work around a preview issue https://github.com/pulumi/pulumi-azure/issues/192
 const principalId = app.identity.apply(id => id.principalId || "11111111-1111-1111-1111-111111111111");
 
 // Grant App Service access to KV secrets
-new azure.keyvault.AccessPolicy("app-policy", {
+const policy = new azure.keyvault.AccessPolicy("app-policy", {
     keyVaultId: vault.id,
     tenantId: tenantId,
     objectId: principalId,
@@ -157,13 +147,13 @@ const blobPermission = new azure.role.Assignment("readblob", {
 
 // Add SQL firewall exceptions
 const firewallRules = app.outboundIpAddresses.apply(
-    ips => ips.split(',').map(
+    ips => ips.split(",").map(
         ip => new azure.sql.FirewallRule(`FR${ip}`, {
             resourceGroupName: resourceGroup.name,
             startIpAddress: ip,
             endIpAddress: ip,
             serverName: sqlServer.name,
-        })
+        }),
     ));
 
 export const endpoint = pulumi.interpolate `https://${app.defaultSiteHostname}`;

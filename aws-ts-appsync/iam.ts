@@ -1,5 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
 export function createIamRole(name: string, table: aws.dynamodb.Table) {
     const role = new aws.iam.Role(`${name}-role`, {
@@ -12,7 +14,7 @@ export function createIamRole(name: string, table: aws.dynamodb.Table) {
                     }],
                     effect: "Allow",
                 }],
-            }).json,
+            }, { async: true }).then(doc => doc.json),
     });
 
     const policy = new aws.iam.Policy(`${name}-policy`, {
@@ -22,10 +24,10 @@ export function createIamRole(name: string, table: aws.dynamodb.Table) {
                 resources: [arn],
                 effect: "Allow",
             }],
-       })).json,
+        }, { async: true }).then(doc => doc.json)),
     });
 
-    new aws.iam.RolePolicyAttachment(`${name}-rpa`, {
+    const attachment = new aws.iam.RolePolicyAttachment(`${name}-rpa`, {
         role: role,
         policyArn: policy.arn,
     });

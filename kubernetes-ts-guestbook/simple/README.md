@@ -11,7 +11,7 @@ also in this repo. It provisions the same set of resources.
 
 ## Running the App
 
-Follow the steps in [Pulumi Installation](https://www.pulumi.com/docs/reference/install/) and [Kubernetes Setup](https://www.pulumi.com/docs/reference/clouds/kubernetes/setup/) to get Pulumi working with Kubernetes.
+Follow the steps in [Pulumi Installation](https://www.pulumi.com/docs/get-started/install/) and [Kubernetes Setup](https://www.pulumi.com/docs/intro/cloud-providers/kubernetes/setup/) to get Pulumi working with Kubernetes.
 
 Install dependencies:
 
@@ -44,10 +44,10 @@ Performing changes:
 
      Type                           Name                Status      Info
  +   pulumi:pulumi:Stack            guestbook-testbook  created
- +   ├─ kubernetes:apps:Deployment  redis-master        created
+ +   ├─ kubernetes:apps:Deployment  redis-leader        created
  +   ├─ kubernetes:apps:Deployment  frontend            created
  +   ├─ kubernetes:apps:Deployment  redis-replica       created
- +   ├─ kubernetes:core:Service     redis-master        created     1 info message
+ +   ├─ kubernetes:core:Service     redis-leader        created     1 info message
  +   ├─ kubernetes:core:Service     redis-replica       created     1 info message
  +   └─ kubernetes:core:Service     frontend            created     2 info messages
 

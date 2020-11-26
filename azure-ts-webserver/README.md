@@ -1,17 +1,18 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Azure Web Server Virtual Machine
+# Web Server Using Azure Virtual Machine
 
 This example provisions a Linux web server in an Azure Virtual Machine and gives it a public IP address.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/en/download/)
-- [Download and install the Pulumi CLI](https://www.pulumi.com/docs/reference/install/)
-- [Connect Pulumi with your Azure account](https://www.pulumi.com/docs/reference/clouds/azure/setup/) (if your `az` CLI is
-      configured, this will just work)
+- [Download and install the Pulumi CLI](https://www.pulumi.com/docs/get-started/install/)
+- [Connect Pulumi with your Azure account](https://www.pulumi.com/docs/intro/cloud-providers/azure/setup/) (if your `az` CLI is configured, no further changes are required)
 
 ## Running the App
+
+After cloning this repo, from this working directory, run these commands:
 
 1.  Create a new stack:
 

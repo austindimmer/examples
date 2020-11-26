@@ -1,5 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
 const baseTags = {
     project: `${pulumi.getProject()}-${pulumi.getStack()}`,
@@ -9,9 +11,9 @@ const ubuntuAmiId = aws.getAmi({
     mostRecent: true,
     nameRegex: "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*",
     owners: ["099720109477"],
-}).then(ami => ami.id);
+}, { async: true }).then(ami => ami.id);
 
-let nginxUserData =
+const nginxUserData =
     `#!/bin/bash
 apt -y update
 apt -y install nginx
@@ -32,7 +34,7 @@ const nginxSecGroup = new aws.ec2.SecurityGroup("nginx", {
     tags: Object.assign({ Name: `nginx` }, baseTags),
 });
 
-let nginxInstances = [];
+const nginxInstances = [];
 for (let i = 0; i < 3; i++) {
     const nginxInstance = new aws.ec2.Instance(`nginx-${i}`, {
         ami: ubuntuAmiId,

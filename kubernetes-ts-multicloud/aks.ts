@@ -29,10 +29,10 @@ export class AksCluster extends pulumi.ComponentResource {
         super("examples:kubernetes-ts-multicloud:AksCluster", name, {}, opts);
 
         // Generate a strong password for the Service Principal.
-        const password = new random.RandomString("password", {
+        const password = new random.RandomPassword("password", {
             length: 20,
             special: true,
-        }, {parent: this, additionalSecretOutputs: ["result"]}).result;
+        }, {parent: this}).result;
 
         // Create an SSH public key that will be used by the Kubernetes cluster.
         // Note: We create one here to simplify the demo, but a production deployment would probably pass
@@ -45,7 +45,7 @@ export class AksCluster extends pulumi.ComponentResource {
         // Create the AD service principal for the K8s cluster.
         const adApp = new azuread.Application("aks", undefined, {parent: this});
         const adSp = new azuread.ServicePrincipal("aksSp", {
-            applicationId: adApp.applicationId
+            applicationId: adApp.applicationId,
         }, {parent: this});
         const adSpPassword = new azuread.ServicePrincipalPassword("aksSpPassword", {
             servicePrincipalId: adSp.id,
@@ -60,7 +60,7 @@ export class AksCluster extends pulumi.ComponentResource {
         const rgNetworkRole = new azure.role.Assignment("spRole", {
             principalId: adSp.id,
             scope: resourceGroup.id,
-            roleDefinitionName: "Network Contributor"
+            roleDefinitionName: "Network Contributor",
         }, {parent: this});
 
         // Create a Virtual Network for the cluster
@@ -98,7 +98,7 @@ export class AksCluster extends pulumi.ComponentResource {
                 clientId: adApp.applicationId,
                 clientSecret: adSpPassword.value,
             },
-            kubernetesVersion: "1.13.5",
+            kubernetesVersion: "1.16.9",
             roleBasedAccessControl: {enabled: true},
             networkProfile: {
                 networkPlugin: "azure",
@@ -115,7 +115,7 @@ export class AksCluster extends pulumi.ComponentResource {
 
         this.staticAppIP = new azure.network.PublicIp("staticAppIP", {
             resourceGroupName: this.cluster.nodeResourceGroup,
-            allocationMethod: "Static"
+            allocationMethod: "Static",
         }, {parent: this}).ipAddress;
 
         this.registerOutputs();

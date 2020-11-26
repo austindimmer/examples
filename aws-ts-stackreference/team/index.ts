@@ -1,5 +1,7 @@
-import * as pulumi from "@pulumi/pulumi";
+// Copyright 2016-2019, Pulumi Corporation.  All rights reserved.
+
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
 /**
  *   company
@@ -17,15 +19,15 @@ const combinedTags = {
     /* from department stack */ department: departmentStack.getOutput("departmentName"),
     /* from team config      */ team: config.require("teamName"),
     "Managed By": "Pulumi",
-}
+};
 
 const amiId = aws.getAmi({
+    owners: ["099720109477"], // Ubuntu
     mostRecent: true,
     filters: [
-        { name: "owner-id", values: ["099720109477"] }, // Ubuntu
         { name: "name", values: ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"] },
     ],
-}).id;
+}, { async: true }).then(ami => ami.id);
 
 const instance = new aws.ec2.Instance("tagged", {
     ami: amiId,

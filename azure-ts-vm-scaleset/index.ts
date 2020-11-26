@@ -6,8 +6,9 @@ import * as random from "@pulumi/random";
 
 const config = new pulumi.Config();
 const adminUser = config.get("adminUser") || "azureuser";
-const adminPassword = config.getSecret("adminPassword") || new random.RandomString("pwd", {
+const adminPassword = config.getSecret("adminPassword") || new random.RandomPassword("pwd", {
     length: 20,
+    special: true,
 }).result;
 const domain = config.get("domain") || new random.RandomString("domain", {
     length: 10,
@@ -61,6 +62,7 @@ const vnet = new azure.network.VirtualNetwork("vnet", {
 });
 
 const subnet = new azure.network.Subnet("subnet", {
+    enforcePrivateLinkEndpointNetworkPolicies: false,
     resourceGroupName: resourceGroup.name,
     addressPrefix: "10.0.2.0/24",
     virtualNetworkName: vnet.name,

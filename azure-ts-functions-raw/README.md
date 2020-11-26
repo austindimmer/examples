@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Azure Functions
+# Azure Functions in All Supported Languages
 
 Azure Functions created from raw deployment packages in all supported languages.
 
@@ -10,8 +10,6 @@ Azure Functions created from raw deployment packages in all supported languages.
 - [Apache Maven](https://maven.apache.org/) for the Java Function App
 
 Please remove the corresponding resources from the program in case you don't need those runtimes.
-
-Known issue: [#2784](https://github.com/pulumi/pulumi/issues/2784)&mdash;Python deployment package gets corrupted if deployed from Windows. Workaround: deploy from WSL (Windows Subsystem for Linux), Mac OS, or Linux.
 
 ## Running the App
 

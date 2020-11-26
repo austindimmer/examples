@@ -1,6 +1,6 @@
 [![Deploy](https://get.pulumi.com/new/button.svg)](https://app.pulumi.com/new)
 
-# Deploy an Azure Resource Manager (ARM) Template in Pulumi
+# Azure Resource Manager (ARM) Template
 
 This example simply deploys an existing Azure Resource Manager (ARM) template using Pulumi. This accepts
 any existing valid ARM template, enabling easy migration from existing JSON templates and towards infrastructure
@@ -8,15 +8,15 @@ as code using Pulumi. Once deployed, it is easy to incrementally refactor resour
 and into code.
 
 [Read more about ARM templates here](
-https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview#template-deployment).
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/overview).
 
 ## Prerequisites
 
-Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/reference/install/).
+Ensure you have [downloaded and installed the Pulumi CLI](https://www.pulumi.com/docs/get-started/install/).
 
 We will be deploying to Azure, so you will need an Azure account. If you don't have an account,
 [sign up for free here](https://azure.microsoft.com/en-us/free/). [Follow the instructions
-here](https://www.pulumi.com/docs/reference/clouds/azure/setup/) to connect Pulumi to your Azure account.
+here](https://www.pulumi.com/docs/intro/cloud-providers/azure/setup/) to connect Pulumi to your Azure account.
 
 Now, install dependencies:
 
@@ -37,6 +37,7 @@ npm install
 
     ```bash
     $ pulumi config set azure:environment public
+    $ pulumi config set azure:location westus2
     $ az login
     ```
 
@@ -70,7 +71,7 @@ npm install
     $ pulumi stack rm -y --skip-preview
     ```
 
-# Next Steps
+## Next Steps
 
 For more Azure examples, please [check out the Azure Getting Started Guide](
-https://www.pulumi.com/docs/quickstart/azure/).
+https://www.pulumi.com/docs/intro/cloud-providers/azure/).
